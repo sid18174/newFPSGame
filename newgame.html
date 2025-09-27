@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Abyss Jam Plan</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      background: #0a0b14;
+      color: #e6f1ff;
+    }
+
+    header {
+      background: linear-gradient(135deg, #131b2c 0%, #192a46 100%);
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    header p {
+      margin-top: 12px;
+      color: #8fb3ff;
+      font-size: 1.1rem;
+    }
+
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    section {
+      margin-bottom: 48px;
+      background: rgba(19, 27, 44, 0.7);
+      border: 1px solid rgba(92, 132, 209, 0.25);
+      border-radius: 12px;
+      padding: 28px 32px;
+      box-shadow: 0 18px 35px -24px rgba(0, 0, 0, 0.8);
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 1.6rem;
+      color: #7fc3ff;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      color: #9ddcff;
+      margin-bottom: 8px;
+    }
+
+    ul {
+      padding-left: 1.2em;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+    }
+
+    .highlight {
+      border-left: 4px solid #5cc9ff;
+      padding-left: 16px;
+      margin-bottom: 16px;
+    }
+
+    .constraints {
+      background: rgba(23, 34, 59, 0.9);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-top: 12px;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .timeline span {
+      display: inline-block;
+      background: rgba(95, 165, 255, 0.1);
+      border: 1px solid rgba(95, 165, 255, 0.3);
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-weight: 600;
+      color: #9ddcff;
+    }
+
+    footer {
+      text-align: center;
+      padding: 28px;
+      color: #637ca8;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 640px) {
+      main {
+        padding: 24px 16px;
+      }
+
+      section {
+        padding: 24px;
+      }
+
+      .timeline {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Abyss &mdash; Jam Delivery Plan</h1>
+    <p>Fast-paced multi-team FPS built in Unity with Netcode for GameObjects</p>
+  </header>
+  <main>
+    <section>
+      <h2>Game Pillars</h2>
+      <div class="grid">
+        <div class="highlight">
+          <h3>Relentless Combat</h3>
+          <p>Instant respawns and compact arenas keep squads locked in a kinetic tug-of-war for map control.</p>
+        </div>
+        <div class="highlight">
+          <h3>Risk-Reward Loadouts</h3>
+          <p>Each gear pick trades survivability, mobility, or DPS for windows of tactical dominance.</p>
+        </div>
+        <div class="highlight">
+          <h3>Jam-Friendly Netcode</h3>
+          <p>Authoritative server handles score, damage, and spawns. Clients predict movement to stay snappy.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Core Systems Snapshot</h2>
+      <h3>Gear Framework</h3>
+      <ul>
+        <li>ScriptableObject <strong>GearDefinition</strong> with positive &amp; trade-off modifiers, cooldown, and optional ability prefab.</li>
+        <li><strong>GearRuntimeController</strong> aggregates stat deltas, syncs cooldowns via RPCs, spawns Netcode-driven ability prefabs.</li>
+        <li>Flagship gear at launch: Turbo Boots, Enchanted Armor Amulet, Quantum Boots, Self-Destruct Chestplate, Phase Shift Cloak, Grav Anchor, Nano Stim Injector.</li>
+      </ul>
+      <h3>Weapons &amp; Attachments</h3>
+      <ul>
+        <li><strong>WeaponDefinition</strong> defines archetype (AR/Sniper/Shotgun/SMG) with base stats.</li>
+        <li><strong>AttachmentDefinition</strong> slots (scope, barrel, mag, stock, grip) apply stat offsets + trade-offs.</li>
+        <li><strong>WeaponRuntimeController</strong> runs client-side input, server-authoritative hitscan, updates spread/ROF via attachment modifiers.</li>
+      </ul>
+      <h3>Match Flow</h3>
+      <ul>
+        <li><strong>DeathmatchManager</strong> balances team assignments (4/5/8 teams), tracks scores, and signals end-of-round.</li>
+        <li><strong>PlayerSpawnManager</strong> rotates team spawn anchors, prevents camp loops, integrates with per-team rally zones.</li>
+        <li>Stretch goal: <strong>CaptureTheFlagManager</strong> reuses team config pipeline, adds flag state sync.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Networking Architecture</h2>
+      <ul>
+        <li>Unity 2022 LTS + Netcode for GameObjects + Unity Transport (Relay-ready).</li>
+        <li>Authoritative host: server owns damage, score, gear activation. Clients send input commands with reconciliation.</li>
+        <li>Prefabs &amp; ownership: <em>PlayerAvatar</em>, <em>GearAbility</em>, <em>Projectile/HitScanRequest</em>, <em>ScoreManager UI</em>.</li>
+        <li>Bandwidth budget: 30Hz transform sync with delta compression; ability triggers propagate via client RPC hooks.</li>
+      </ul>
+      <div class="constraints">
+        <strong>24-hour team focus</strong>
+        <ul>
+          <li>Two programmers split Gameplay vs Networking.</li>
+          <li>UI/UX designer owns loadout UI, HUD readability, and quick map paint-overs.</li>
+          <li>Scope wedges: cut CTF or excess gear if stability drops below 8-player target.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Execution Timeline</h2>
+      <div class="timeline">
+        <span>0 &ndash; 2h</span>
+        <div>
+          <ul>
+            <li>Project setup, version control, Netcode sample integration.</li>
+            <li>Greybox arena + spawn anchors.</li>
+          </ul>
+        </div>
+
+        <span>2 &ndash; 6h</span>
+        <div>
+          <ul>
+            <li>Movement controller with client prediction.</li>
+            <li>Server-authoritative damage + respawn loop.</li>
+          </ul>
+        </div>
+
+        <span>6 &ndash; 10h</span>
+        <div>
+          <ul>
+            <li>Weapon runtime (AR + shotgun baseline) &amp; scoreboard UI stub.</li>
+            <li>Attachment modifier pipeline.</li>
+          </ul>
+        </div>
+
+        <span>10 &ndash; 14h</span>
+        <div>
+          <ul>
+            <li>Gear system implementation with 4 highlighted items.</li>
+            <li>Ability VFX placeholders + cooldown HUD.</li>
+          </ul>
+        </div>
+
+        <span>14 &ndash; 18h</span>
+        <div>
+          <ul>
+            <li>Match lobby with team config selection.</li>
+            <li>Loadout menu for gear &amp; attachments.</li>
+          </ul>
+        </div>
+
+        <span>18 &ndash; 21h</span>
+        <div>
+          <ul>
+            <li>LAN stress test (8+ clients), fix desyncs and gear exploits.</li>
+            <li>Balance passes on TTK &amp; gear risks.</li>
+          </ul>
+        </div>
+
+        <span>21 &ndash; 24h</span>
+        <div>
+          <ul>
+            <li>Polish: audio cues, particle hits, concise tutorial splash.</li>
+            <li>Build + deploy to itch.io, prepare presentation beats.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Risk Mitigation</h2>
+      <ul>
+        <li><strong>Netcode Instability</strong>: Lock tick rate, enforce authoritative damage, aggressively log de-syncs, keep rollback scope tiny.</li>
+        <li><strong>Gear Balance Chaos</strong>: Telemetry hooks track deaths per gear combo; provide emergency switch to disable problem gear.</li>
+        <li><strong>Scope Creep</strong>: Maintain cut list (CTF, cosmetics, PvE). If milestones slip, revert to 4-team only and limit gear to 4 items.</li>
+        <li><strong>New Technology</strong>: Pair-program first Netcode prefabs, lean on NGO samples, avoid custom transports.</li>
+      </ul>
+    </section>
+  </main>
+  <footer>
+    Abyss &copy; 2024 Jam Team &mdash; Built for fast LAN showdowns and future expansion.
+  </footer>
+</body>
+</html>
