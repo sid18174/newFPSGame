@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Abyss – Browser Prototype</title>
+  <title>Abyss Browser Arena</title>
   <style>
     :root {
       color-scheme: dark;
-      --panel-bg: rgba(12, 18, 32, 0.88);
+      --bg: radial-gradient(circle at center, #07101f 0%, #02050a 70%, #010308 100%);
       --accent: #66d1ff;
-      --accent-soft: rgba(102, 209, 255, 0.24);
-      --danger: #ff5f7d;
-      --success: #6dff9c;
+      --friendly: #6bc8ff;
+      --enemy: #ff6b8b;
+      --neutral: #ffe569;
     }
 
     * {
@@ -20,386 +20,381 @@
 
     body {
       margin: 0;
+      background: var(--bg);
       font-family: "Segoe UI", Arial, sans-serif;
-      background: radial-gradient(120% 120% at 50% 0%, #08101f 0%, #03060b 100%);
-      color: #e5f1ff;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-
-    header {
-      padding: 18px 24px 12px;
-      text-align: center;
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 2rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-
-    header p {
-      margin: 6px 0 0;
-      color: #8fb8ff;
-      font-size: 0.95rem;
-    }
-
-    main {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 320px 1fr 260px;
-      gap: 16px;
-      padding: 0 16px 16px;
-    }
-
-    aside, .hud-panel {
-      background: var(--panel-bg);
-      border: 1px solid rgba(102, 209, 255, 0.1);
-      border-radius: 12px;
-      padding: 18px 20px;
-      backdrop-filter: blur(6px);
+      color: #e8f4ff;
       overflow: hidden;
-    }
-
-    #controlPanel h2, .hud-panel h3 {
-      margin: 0 0 12px;
-      font-size: 1.05rem;
-      letter-spacing: 0.05em;
-      color: var(--accent);
-      text-transform: uppercase;
-    }
-
-    label {
-      display: block;
-      font-size: 0.85rem;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #8aa8d9;
-    }
-
-    select, button, input[type="radio"] + span, input[type="checkbox"] + span {
-      font-family: inherit;
-      font-size: 0.95rem;
-    }
-
-    select, button {
-      width: 100%;
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: rgba(8, 14, 25, 0.8);
-      color: #e7f3ff;
-    }
-
-    button {
-      cursor: pointer;
-      background: linear-gradient(135deg, #0f1f36 0%, #102744 60%, #194d75 100%);
-      border: 1px solid rgba(102, 209, 255, 0.4);
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      margin-top: 10px;
-    }
-
-    button:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    .option-group {
-      margin-bottom: 14px;
-    }
-
-    .radio-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .radio-chip {
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(102, 209, 255, 0.25);
-      background: rgba(12, 20, 35, 0.8);
-      cursor: pointer;
-      transition: transform 0.15s ease, border-color 0.15s ease;
-    }
-
-    .radio-chip.active {
-      border-color: var(--accent);
-      color: var(--accent);
-      transform: translateY(-1px);
     }
 
     canvas {
       display: block;
-      background: rgba(7, 10, 18, 0.9);
-      border-radius: 16px;
-      border: 1px solid rgba(102, 209, 255, 0.08);
-      width: 100%;
-      height: 100%;
-      box-shadow: 0 28px 80px -40px rgba(0, 0, 0, 0.8);
+      width: 100vw;
+      height: 100vh;
+      background: rgba(3, 6, 14, 0.96);
+      image-rendering: pixelated;
     }
 
-    #scoreboard {
+    #overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 8, 16, 0.88);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 32px;
+      gap: 24px;
+      z-index: 10;
+    }
+
+    #overlay h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin: 0;
+    }
+
+    #overlay p {
+      max-width: 620px;
+      margin: 0;
+      color: #9cc8ff;
+      line-height: 1.6;
+      font-size: 1rem;
+    }
+
+    #loadout {
       display: grid;
-      gap: 6px;
+      gap: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      width: min(880px, 100%);
+    }
+
+    .loadout-card {
+      border: 1px solid rgba(102, 209, 255, 0.28);
+      border-radius: 18px;
+      padding: 18px;
+      background: rgba(8, 14, 26, 0.85);
+      text-align: left;
+    }
+
+    .loadout-card h3 {
+      margin: 0 0 12px;
+      font-size: 1.05rem;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(6, 12, 19, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      color: #e4f3ff;
       font-size: 0.95rem;
     }
 
-    .score-row {
+    #launchBtn {
+      padding: 14px 38px;
+      background: linear-gradient(135deg, #0f202f 0%, #18456b 50%, #1a6fa1 100%);
+      border: 1px solid rgba(102, 209, 255, 0.55);
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #e5f4ff;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    #launchBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px -18px rgba(72, 176, 255, 0.8);
+    }
+
+    #hud {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    #hud .panel {
+      background: rgba(5, 11, 20, 0.78);
+      border: 1px solid rgba(102, 209, 255, 0.2);
+      padding: 12px 16px;
+      border-radius: 12px;
+      min-width: 240px;
+      pointer-events: none;
+    }
+
+    #hud h2 {
+      margin: 0 0 10px;
+      font-size: 0.85rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    #scoreboard div {
       display: flex;
       justify-content: space-between;
-      padding: 6px 8px;
-      border-radius: 8px;
-      background: rgba(12, 19, 33, 0.7);
-      border: 1px solid rgba(102, 209, 255, 0.08);
-    }
-
-    .score-row.me {
-      border-color: rgba(102, 209, 255, 0.45);
-    }
-
-    #killFeed {
-      margin-top: 16px;
-      max-height: 200px;
-      overflow-y: auto;
-      font-size: 0.85rem;
-      color: #9ec7ff;
-    }
-
-    #killFeed div {
       margin-bottom: 6px;
+      font-size: 0.9rem;
     }
 
-    #statusBanner {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      top: 68px;
-      background: rgba(12, 18, 32, 0.92);
-      border: 1px solid rgba(102, 209, 255, 0.3);
-      padding: 12px 28px;
-      border-radius: 999px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+    #feed {
+      position: fixed;
+      bottom: 20px;
+      left: 16px;
+      background: rgba(5, 10, 18, 0.7);
+      border: 1px solid rgba(102, 209, 255, 0.16);
+      padding: 12px 16px;
+      border-radius: 12px;
+      max-width: 280px;
+      max-height: 220px;
+      overflow: hidden;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      pointer-events: none;
       display: none;
     }
 
-    #instructions {
-      font-size: 0.8rem;
-      line-height: 1.5;
-      color: #9ab6e6;
-      margin-top: 16px;
+    #statusBanner {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(5, 10, 18, 0.9);
+      border: 1px solid rgba(102, 209, 255, 0.4);
+      padding: 14px 32px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-weight: 700;
+      display: none;
+      z-index: 6;
     }
 
-    .stat-line {
-      font-size: 0.85rem;
-      margin-bottom: 4px;
-    }
-
-    .ability-ready {
-      color: var(--success);
-      font-weight: 600;
-    }
-
-    .ability-cooldown {
-      color: var(--danger);
-      font-weight: 600;
-    }
-
-    @media (max-width: 1280px) {
-      main {
-        grid-template-columns: 1fr;
-      }
-
-      aside, .hud-panel {
-        order: -1;
-      }
-
-      canvas {
-        min-height: 420px;
-      }
+    #crosshair {
+      position: fixed;
+      width: 22px;
+      height: 22px;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 4;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Abyss – Web Arena Prototype</h1>
-    <p>Multiplayer design goals sand-boxed in a top-down HTML build for rapid iteration</p>
-  </header>
-  <div id="statusBanner"></div>
-  <main>
-    <aside id="controlPanel">
-      <h2>Pre-Match Loadout</h2>
-      <div class="option-group">
-        <label>Team Configuration</label>
-        <div class="radio-row" id="teamConfigOptions"></div>
+  <canvas id="canvas" width="1280" height="720"></canvas>
+
+  <div id="overlay">
+    <h1>Abyss</h1>
+    <p>Deploy into a rapid-fire prototype inspired by the jam spec. Pick your loadout, then hold out against rival teams in a chaotic multi-squad deathmatch. WASD to move, mouse to aim, hold left-click to fire, hit Space for your combined gear ability.</p>
+    <div id="loadout">
+      <div class="loadout-card">
+        <h3>Team Configuration</h3>
+        <select id="teamConfig">
+          <option value="squads">Squads — 4 Teams × 4</option>
+          <option value="trios">Trios — 5 Teams × 3</option>
+          <option value="duos">Duos — 8 Teams × 2</option>
+        </select>
       </div>
-      <div class="option-group">
-        <label>Primary Weapon</label>
+      <div class="loadout-card">
+        <h3>Primary Weapon</h3>
         <select id="weaponSelect"></select>
       </div>
-      <div class="option-group">
-        <label>Attachments</label>
-        <select id="scopeSelect"></select>
-        <select id="barrelSelect" style="margin-top:6px"></select>
-        <select id="magSelect" style="margin-top:6px"></select>
+      <div class="loadout-card">
+        <h3>Attachments</h3>
+        <select id="scopeSelect" style="margin-bottom:8px;"></select>
+        <select id="barrelSelect" style="margin-bottom:8px;"></select>
+        <select id="magSelect"></select>
       </div>
-      <div class="option-group">
-        <label>Gear</label>
-        <select id="bootsSelect"></select>
-        <select id="chestSelect" style="margin-top:6px"></select>
-        <select id="utilitySelect" style="margin-top:6px"></select>
+      <div class="loadout-card">
+        <h3>Gear Picks</h3>
+        <select id="bootsSelect" style="margin-bottom:8px;"></select>
+        <select id="chestSelect" style="margin-bottom:8px;"></select>
+        <select id="utilitySelect"></select>
       </div>
-      <button id="startBtn">Launch Deathmatch</button>
-      <div id="instructions">
-        <strong>Controls</strong><br />
-        Move: WASD · Sprint: Shift · Fire: Hold Left Mouse · Dash/Ability: Space · Toggle Map: M
-      </div>
-    </aside>
-    <section style="position:relative;">
-      <canvas id="gameCanvas" width="960" height="600"></canvas>
-    </section>
-    <div class="hud-panel">
-      <h3>Match Status</h3>
-      <div id="scoreboard"></div>
-      <div id="playerStats" style="margin-top:16px;"></div>
-      <div id="killFeed"></div>
     </div>
-  </main>
+    <button id="launchBtn">Launch Deathmatch</button>
+    <p style="font-size:0.85rem;color:#5ea6ff;">Tip: stay in motion—gear trade-offs push you to take calculated risks. First team to 25 collective kills wins.</p>
+  </div>
+
+  <div id="hud" style="display:none;">
+    <div class="panel">
+      <h2>Status</h2>
+      <div id="playerStats"></div>
+    </div>
+    <div class="panel">
+      <h2>Scoreboard</h2>
+      <div id="scoreboard"></div>
+    </div>
+  </div>
+
+  <div id="feed"></div>
+  <div id="statusBanner"></div>
+  <div id="crosshair"></div>
+
   <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth * window.devicePixelRatio;
+      canvas.height = window.innerHeight * window.devicePixelRatio;
+      canvas.style.width = window.innerWidth + 'px';
+      canvas.style.height = window.innerHeight + 'px';
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
     const TEAM_CONFIGS = {
-      squads: { id: 'squads', label: 'Squads 4×4', teams: 4, playersPerTeam: 4 },
-      trios: { id: 'trios', label: 'Trios 5×3', teams: 5, playersPerTeam: 3 },
-      duos: { id: 'duos', label: 'Duos 8×2', teams: 8, playersPerTeam: 2 }
+      squads: { teams: 4, playersPerTeam: 4 },
+      trios: { teams: 5, playersPerTeam: 3 },
+      duos: { teams: 8, playersPerTeam: 2 }
     };
 
     const TEAM_COLORS = ['#6bc8ff', '#ff6b91', '#ffd66b', '#6bffbd', '#d96bff', '#ff996b', '#6b86ff', '#9eff6b'];
 
     const WEAPONS = {
-      ar: { id: 'ar', name: 'Assault Rifle', damage: 16, fireRate: 9, projectileSpeed: 520, spread: 5, movePenalty: 0.05 },
-      smg: { id: 'smg', name: 'SMG', damage: 11, fireRate: 15, projectileSpeed: 480, spread: 8, movePenalty: 0.02 },
-      shotgun: { id: 'shotgun', name: 'Shotgun', damage: 6, pellets: 6, fireRate: 1.4, projectileSpeed: 420, spread: 30, movePenalty: 0.08 },
-      sniper: { id: 'sniper', name: 'Rail Sniper', damage: 45, fireRate: 0.9, projectileSpeed: 820, spread: 1.5, movePenalty: 0.12 }
+      ar: { name: 'Assault Rifle', damage: 18, fireRate: 8.5, spread: 4, speedPenalty: 0.05, projectileSpeed: 540 },
+      smg: { name: 'SMG', damage: 12, fireRate: 14, spread: 8, speedPenalty: 0.02, projectileSpeed: 500 },
+      shotgun: { name: 'Shotgun', damage: 7, pellets: 5, fireRate: 1.8, spread: 30, speedPenalty: 0.08, projectileSpeed: 420 },
+      sniper: { name: 'Rail Sniper', damage: 48, fireRate: 0.9, spread: 1.6, speedPenalty: 0.12, projectileSpeed: 820 }
     };
 
     const ATTACHMENTS = {
       scope: [
-        { id: 'scope_none', name: 'Scope: Reflex (baseline)', damage: 0, spread: 0, fireRate: 0, mobility: 0 },
-        { id: 'scope_marksman', name: 'Scope: Marksman (+accuracy, -mobility)', damage: 0, spread: -2, fireRate: 0, mobility: -0.04 },
-        { id: 'scope_recon', name: 'Scope: Recon (+range, -fire rate)', damage: 5, spread: -1, fireRate: -0.1, mobility: -0.02 }
+        { id: 'scope_baseline', name: 'Reflex Scope', damage: 0, spread: 0, fireRate: 0, mobility: 0 },
+        { id: 'scope_marksman', name: 'Marksman Optic (+accuracy, -mobility)', damage: 2, spread: -2, fireRate: -0.2, mobility: -0.04 },
+        { id: 'scope_recon', name: 'Recon Glass (+range, -fire rate)', damage: 5, spread: -1, fireRate: -0.3, mobility: -0.02 }
       ],
       barrel: [
-        { id: 'barrel_none', name: 'Barrel: Balanced', damage: 0, spread: 0, fireRate: 0, mobility: 0 },
-        { id: 'barrel_heavy', name: 'Barrel: Heavy (+damage, +spread)', damage: 8, spread: 4, fireRate: -0.05, mobility: -0.02 },
-        { id: 'barrel_comp', name: 'Barrel: Compensator (-spread, -damage)', damage: -3, spread: -3, fireRate: 0.05, mobility: 0 }
+        { id: 'barrel_balanced', name: 'Balanced Barrel', damage: 0, spread: 0, fireRate: 0, mobility: 0 },
+        { id: 'barrel_heavy', name: 'Heavy Barrel (+damage, +spread)', damage: 8, spread: 4, fireRate: -0.25, mobility: -0.02 },
+        { id: 'barrel_comp', name: 'Compensated (-damage, -spread)', damage: -4, spread: -3, fireRate: 0.2, mobility: 0 }
       ],
       mag: [
-        { id: 'mag_standard', name: 'Mag: Standard', damage: 0, spread: 0, fireRate: 0, mobility: 0 },
-        { id: 'mag_drum', name: 'Mag: Drum (+fire rate, -mobility)', damage: 0, spread: 1, fireRate: 0.12, mobility: -0.05 },
-        { id: 'mag_lightweight', name: 'Mag: Lightweight (+mobility, -fire rate)', damage: 0, spread: -1, fireRate: -0.08, mobility: 0.05 }
+        { id: 'mag_standard', name: 'Standard Mag', damage: 0, spread: 0, fireRate: 0, mobility: 0 },
+        { id: 'mag_drum', name: 'Drum (+fire rate, -mobility)', damage: 0, spread: 1, fireRate: 0.6, mobility: -0.06 },
+        { id: 'mag_light', name: 'Lightweight (+mobility, -fire rate)', damage: 0, spread: -1, fireRate: -0.4, mobility: 0.06 }
       ]
     };
 
     const GEAR_ITEMS = {
       boots: [
-        { id: 'turbo_boots', name: 'Turbo Boots', speed: 0.25, shield: -0.2, damage: 0, ability: 'Speed Burst' },
-        { id: 'quantum_boots', name: 'Quantum Boots', speed: 0.15, shield: -0.3, damage: 0.1, ability: 'Explosion Surf' },
-        { id: 'steady_tread', name: 'Steady Tread', speed: -0.05, shield: 0.2, damage: 0.05, ability: 'Rooted Brace' }
+        { id: 'turbo', name: 'Turbo Boots', speed: 0.25, shield: -0.2, damage: 0, ability: 'Speed Burst' },
+        { id: 'quantum', name: 'Quantum Boots', speed: 0.18, shield: -0.3, damage: 0.1, ability: 'Explosion Surf' },
+        { id: 'steady', name: 'Steady Tread', speed: -0.05, shield: 0.2, damage: 0.05, ability: 'Brace' }
       ],
       chest: [
-        { id: 'enchanted_amulet', name: 'Enchanted Armor Amulet', speed: -0.15, shield: 0.45, damage: -0.05, ability: 'Stone Ward' },
-        { id: 'self_destruct', name: 'Self-Destruct Chestplate', speed: -0.3, shield: -0.4, damage: 0.6, ability: 'Nova Detonate' },
-        { id: 'tactical_vest', name: 'Tactical Vest', speed: 0, shield: 0.2, damage: 0.1, ability: 'Stim Burst' }
+        { id: 'amulet', name: 'Enchanted Armor Amulet', speed: -0.15, shield: 0.45, damage: -0.05, ability: 'Stone Ward' },
+        { id: 'nova', name: 'Self-Destruct Chestplate', speed: -0.3, shield: -0.4, damage: 0.6, ability: 'Nova Detonate' },
+        { id: 'tactical', name: 'Tactical Vest', speed: 0.02, shield: 0.18, damage: 0.12, ability: 'Stim Burst' }
       ],
       utility: [
-        { id: 'phase_cloak', name: 'Phase Shift Cloak', speed: 0.1, shield: -0.2, damage: 0, ability: 'Phase Shift' },
-        { id: 'grav_anchor', name: 'Grav Anchor', speed: -0.1, shield: 0.3, damage: 0, ability: 'Gravity Well' },
-        { id: 'nano_stim', name: 'Nano Stim Injector', speed: 0.05, shield: -0.15, damage: 0.2, ability: 'Overclock' }
+        { id: 'phase', name: 'Phase Shift Cloak', speed: 0.12, shield: -0.18, damage: 0, ability: 'Phase Shift' },
+        { id: 'anchor', name: 'Grav Anchor', speed: -0.1, shield: 0.3, damage: 0, ability: 'Gravity Well' },
+        { id: 'stim', name: 'Nano Stim Injector', speed: 0.08, shield: -0.15, damage: 0.22, ability: 'Overclock' }
       ]
     };
 
     const KEY_STATE = {};
-    let MOUSE_POS = { x: 0, y: 0 };
+    let MOUSE_POS = { x: canvas.width / 2, y: canvas.height / 2 };
     let MOUSE_DOWN = false;
 
+    function populateSelect(select, items) {
+      select.innerHTML = items.map(item => `<option value="${item.id}">${item.name}</option>`).join('');
+    }
+
+    populateSelect(document.getElementById('weaponSelect'), Object.entries(WEAPONS).map(([id, data]) => ({ id, name: data.name })));
+    populateSelect(document.getElementById('scopeSelect'), ATTACHMENTS.scope);
+    populateSelect(document.getElementById('barrelSelect'), ATTACHMENTS.barrel);
+    populateSelect(document.getElementById('magSelect'), ATTACHMENTS.mag);
+    populateSelect(document.getElementById('bootsSelect'), GEAR_ITEMS.boots);
+    populateSelect(document.getElementById('chestSelect'), GEAR_ITEMS.chest);
+    populateSelect(document.getElementById('utilitySelect'), GEAR_ITEMS.utility);
+
     class Fighter {
-      constructor(opts) {
-        Object.assign(this, opts);
+      constructor({ x, y, team, color, isHuman, loadout, name }) {
+        Object.assign(this, { x, y, team, color, isHuman, loadout, name });
         this.radius = 14;
-        this.baseSpeed = 120;
+        this.baseSpeed = 160;
         this.fireCooldown = 0;
         this.abilityCooldown = 0;
         this.abilityTimer = 0;
         this.respawnTimer = 0;
-        this.score = 0;
         this.kills = 0;
         this.deaths = 0;
-        this.activeEffects = [];
+        this.spawn = { x, y };
         this.recalculateStats();
-        this.spawnPoint = { x: this.x, y: this.y };
         this.respawn();
       }
 
       recalculateStats() {
-        const { weapon, attachments, gear } = this.loadout;
-        const weaponData = WEAPONS[weapon];
-        let damage = weaponData.damage;
-        let fireRate = weaponData.fireRate;
-        let spread = weaponData.spread;
-        let projectileSpeed = weaponData.projectileSpeed;
-        let speedModifier = -weaponData.movePenalty;
-
+        const weapon = WEAPONS[this.loadout.weapon];
+        let damage = weapon.damage;
+        let fireRate = weapon.fireRate;
+        let spread = weapon.spread;
+        let movePenalty = weapon.speedPenalty;
+        const attachments = this.loadout.attachments;
         attachments.forEach(att => {
           damage += att.damage || 0;
           fireRate += att.fireRate || 0;
           spread += att.spread || 0;
-          speedModifier += att.mobility || 0;
+          movePenalty -= att.mobility || 0;
         });
-
-        let bonusDamage = 0;
-        let shieldModifier = 0;
-        gear.forEach(g => {
-          speedModifier += g.speed || 0;
-          shieldModifier += g.shield || 0;
-          bonusDamage += g.damage || 0;
+        let shieldBonus = 0;
+        let damageAmp = 0;
+        this.loadout.gear.forEach(gear => {
+          movePenalty -= gear.speed || 0;
+          shieldBonus += gear.shield || 0;
+          damageAmp += gear.damage || 0;
         });
-
         this.stats = {
-          damage: Math.max(4, damage + bonusDamage * weaponData.damage),
-          fireInterval: Math.max(0.08, 1 / Math.max(0.6, fireRate)),
-          spread: Math.max(0.5, spread),
-          projectileSpeed: projectileSpeed,
-          speed: this.baseSpeed * (1 + speedModifier),
-          maxHealth: 100 * (1 + Math.max(-0.6, shieldModifier)),
-          ability: gear.map(g => g.ability)
+          weapon,
+          damage: Math.max(4, damage * (1 + damageAmp)),
+          fireInterval: Math.max(0.12, 1 / Math.max(0.7, fireRate)),
+          spread: Math.max(0.6, spread),
+          speed: this.baseSpeed * (1 - movePenalty),
+          projectileSpeed: weapon.projectileSpeed,
+          maxHealth: 100 * (1 + Math.max(-0.6, shieldBonus)),
+          maxShield: 35 * (1 + Math.max(-0.5, shieldBonus)),
+          abilityName: this.loadout.gear.map(g => g.ability).join(' + ')
         };
-        this.stats.maxShield = Math.max(0, this.stats.maxHealth * 0.35);
       }
 
       respawn() {
+        this.x = this.spawn.x;
+        this.y = this.spawn.y;
         this.health = this.stats.maxHealth;
         this.shield = this.stats.maxShield;
-        this.x = this.spawnPoint.x;
-        this.y = this.spawnPoint.y;
         this.vx = 0;
         this.vy = 0;
-        this.isAlive = true;
         this.fireCooldown = 0;
         this.abilityTimer = 0;
+        this.isAlive = true;
       }
 
       takeDamage(amount, source) {
         if (!this.isAlive) return;
         let remaining = amount;
         if (this.shield > 0) {
-          const absorb = Math.min(this.shield, remaining);
-          this.shield -= absorb;
-          remaining -= absorb;
+          const absorbed = Math.min(this.shield, remaining);
+          this.shield -= absorbed;
+          remaining -= absorbed;
         }
         if (remaining > 0) {
           this.health -= remaining;
@@ -407,109 +402,71 @@
         if (this.health <= 0) {
           this.isAlive = false;
           this.deaths += 1;
-          this.respawnTimer = 2 + Math.random();
-          if (source) {
-            source.kills += 1;
-          }
+          this.respawnTimer = 2.5 + Math.random();
+          if (source) source.kills += 1;
         }
       }
     }
 
     class Bullet {
-      constructor(opts) {
-        Object.assign(this, opts);
-        this.life = 1.8;
+      constructor(props) {
+        Object.assign(this, props);
+        this.life = 1.6;
       }
     }
 
-    class Match {
-      constructor(canvas) {
-        this.canvas = canvas;
-        this.ctx = canvas.getContext('2d');
+    class ArenaMatch {
+      constructor() {
         this.players = [];
         this.bullets = [];
         this.killFeed = [];
         this.running = false;
-        this.config = TEAM_CONFIGS.squads;
         this.human = null;
-        this.lastTimestamp = 0;
         this.targetScore = 25;
-        this.mapSize = { width: canvas.width, height: canvas.height };
-        this.showMap = false;
+        this.lastTime = performance.now();
       }
 
       start(config, loadout) {
-        this.config = config;
-        this.players = [];
-        this.bullets = [];
-        this.killFeed = [];
+        this.players.length = 0;
+        this.bullets.length = 0;
+        this.killFeed.length = 0;
         this.running = true;
-        this.lastTimestamp = performance.now();
-        const teamCount = config.teams;
-        const perTeam = config.playersPerTeam;
-        const spawnRadius = Math.min(this.mapSize.width, this.mapSize.height) * 0.35;
-        const center = { x: this.mapSize.width / 2, y: this.mapSize.height / 2 };
+        this.lastTime = performance.now();
 
-        const spawnPoints = [];
-        for (let t = 0; t < teamCount; t++) {
-          const angle = (Math.PI * 2 * t) / teamCount;
-          const baseX = center.x + Math.cos(angle) * spawnRadius;
-          const baseY = center.y + Math.sin(angle) * spawnRadius;
-          for (let i = 0; i < perTeam; i++) {
-            const jitterX = (Math.random() - 0.5) * 80;
-            const jitterY = (Math.random() - 0.5) * 80;
-            spawnPoints.push({ team: t, x: baseX + jitterX, y: baseY + jitterY });
-          }
-        }
+        const { teams, playersPerTeam } = config;
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = Math.min(centerX, centerY) * 0.65;
 
-        const loadoutAttachments = [
-          ATTACHMENTS.scope.find(a => a.id === document.getElementById('scopeSelect').value),
-          ATTACHMENTS.barrel.find(a => a.id === document.getElementById('barrelSelect').value),
-          ATTACHMENTS.mag.find(a => a.id === document.getElementById('magSelect').value)
-        ];
-
-        const loadoutGear = [
-          GEAR_ITEMS.boots.find(g => g.id === document.getElementById('bootsSelect').value),
-          GEAR_ITEMS.chest.find(g => g.id === document.getElementById('chestSelect').value),
-          GEAR_ITEMS.utility.find(g => g.id === document.getElementById('utilitySelect').value)
-        ];
-
-        const chosenWeapon = document.getElementById('weaponSelect').value;
-
-        let spawnIndex = 0;
-        for (let t = 0; t < teamCount; t++) {
-          for (let p = 0; p < perTeam; p++) {
-            const spawn = spawnPoints[spawnIndex % spawnPoints.length];
-            spawnIndex += 1;
-            const isHuman = t === 0 && p === 0;
-            const loadout = isHuman
-              ? { weapon: chosenWeapon, attachments: loadoutAttachments, gear: loadoutGear }
-              : this.randomLoadout();
-
+        for (let team = 0; team < teams; team++) {
+          for (let i = 0; i < playersPerTeam; i++) {
+            const angle = (Math.PI * 2 * team) / teams;
+            const jitter = (Math.random() - 0.5) * 80;
+            const spawnX = centerX + Math.cos(angle) * radius + jitter;
+            const spawnY = centerY + Math.sin(angle) * radius + jitter;
+            const isHuman = team === 0 && i === 0;
             const fighter = new Fighter({
-              x: spawn.x,
-              y: spawn.y,
-              team: spawn.team,
-              color: TEAM_COLORS[spawn.team % TEAM_COLORS.length],
+              x: spawnX,
+              y: spawnY,
+              team,
+              color: TEAM_COLORS[team % TEAM_COLORS.length],
               isHuman,
-              loadout,
-              name: isHuman ? 'You' : `BOT ${spawn.team + 1}-${p + 1}`
+              loadout: isHuman ? loadout : this.randomLoadout(),
+              name: isHuman ? 'You' : `Bot ${team + 1}-${i + 1}`
             });
-
-            fighter.spawnPoint = { x: spawn.x, y: spawn.y };
             this.players.push(fighter);
             if (isHuman) {
               this.human = fighter;
             }
           }
         }
-        this.updateScoreboard();
-        this.pushFeed('Match Start: First to ' + this.targetScore + ' team kills.');
+        pushStatus('Match Start — First team to 25 kills wins.');
+        updateScoreboard();
+        updatePlayerStats();
       }
 
       randomLoadout() {
-        const weaponKeys = Object.keys(WEAPONS);
-        const weapon = weaponKeys[Math.floor(Math.random() * weaponKeys.length)];
+        const weaponKey = Object.keys(WEAPONS)[Math.floor(Math.random() * Object.keys(WEAPONS).length)];
         const attachments = [
           ATTACHMENTS.scope[Math.floor(Math.random() * ATTACHMENTS.scope.length)],
           ATTACHMENTS.barrel[Math.floor(Math.random() * ATTACHMENTS.barrel.length)],
@@ -520,102 +477,95 @@
           GEAR_ITEMS.chest[Math.floor(Math.random() * GEAR_ITEMS.chest.length)],
           GEAR_ITEMS.utility[Math.floor(Math.random() * GEAR_ITEMS.utility.length)]
         ];
-        return { weapon, attachments, gear };
+        return { weapon: weaponKey, attachments, gear };
       }
 
       update(timestamp) {
         if (!this.running) return;
-        const dt = Math.min(0.033, (timestamp - this.lastTimestamp) / 1000) || 0.016;
-        this.lastTimestamp = timestamp;
+        const dt = Math.min(0.033, (timestamp - this.lastTime) / 1000) || 0.016;
+        this.lastTime = timestamp;
 
-        this.players.forEach(player => {
+        for (const player of this.players) {
           if (!player.isAlive) {
             player.respawnTimer -= dt;
             if (player.respawnTimer <= 0) {
               player.respawn();
-              this.pushFeed(`${player.name} respawned`);
+              pushFeed(`${player.name} redeployed`);
             }
-            return;
+            continue;
           }
 
           if (player.fireCooldown > 0) player.fireCooldown -= dt;
           if (player.abilityCooldown > 0) player.abilityCooldown -= dt;
           if (player.abilityTimer > 0) {
             player.abilityTimer -= dt;
-            if (player.abilityTimer <= 0) {
-              player.recalculateStats();
-            }
+            if (player.abilityTimer <= 0) player.recalculateStats();
           }
 
+          player.vx = player.vy = 0;
           if (player.isHuman) {
-            this.updateHuman(player, dt);
+            this.controlHuman(player, dt);
           } else {
-            this.updateAI(player, dt);
+            this.controlAI(player, dt);
           }
 
-          player.x = Math.max(player.radius, Math.min(this.mapSize.width - player.radius, player.x + player.vx * dt));
-          player.y = Math.max(player.radius, Math.min(this.mapSize.height - player.radius, player.y + player.vy * dt));
-        });
+          player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x + player.vx * dt));
+          player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y + player.vy * dt));
+        }
 
         this.updateBullets(dt);
         this.render();
-        this.checkWinCondition();
+        this.checkWin();
       }
 
-      updateHuman(player, dt) {
-        const speed = player.stats.speed * (KEY_STATE.ShiftLeft || KEY_STATE.ShiftRight ? 1.2 : 1);
-        let vx = 0;
-        let vy = 0;
-        if (KEY_STATE.KeyW) vy -= 1;
-        if (KEY_STATE.KeyS) vy += 1;
-        if (KEY_STATE.KeyA) vx -= 1;
-        if (KEY_STATE.KeyD) vx += 1;
-        const len = Math.hypot(vx, vy) || 1;
-        player.vx = (vx / len) * speed;
-        player.vy = (vy / len) * speed;
-
+      controlHuman(player, dt) {
+        const sprinting = KEY_STATE.ShiftLeft || KEY_STATE.ShiftRight;
+        const speed = player.stats.speed * (sprinting ? 1.2 : 1);
+        let dx = 0, dy = 0;
+        if (KEY_STATE.KeyW) dy -= 1;
+        if (KEY_STATE.KeyS) dy += 1;
+        if (KEY_STATE.KeyA) dx -= 1;
+        if (KEY_STATE.KeyD) dx += 1;
+        const len = Math.hypot(dx, dy);
+        if (len > 0) {
+          player.vx = (dx / len) * speed;
+          player.vy = (dy / len) * speed;
+        }
         if (KEY_STATE.Space && player.abilityCooldown <= 0) {
           this.triggerAbility(player);
         }
-
         if (MOUSE_DOWN) {
-          this.tryFire(player, MOUSE_POS.x, MOUSE_POS.y);
+          this.fire(player, MOUSE_POS.x, MOUSE_POS.y, 1);
         }
       }
 
-      updateAI(player, dt) {
+      controlAI(player, dt) {
         const enemies = this.players.filter(p => p.team !== player.team && p.isAlive);
-        if (!enemies.length) {
-          player.vx = player.vy = 0;
-          return;
-        }
-        const target = enemies.reduce((best, current) => {
+        if (!enemies.length) return;
+        const target = enemies.reduce((closest, current) => {
           const dist = Math.hypot(current.x - player.x, current.y - player.y);
-          return dist < best.dist ? { dist, entity: current } : best;
+          return dist < closest.dist ? { dist, entity: current } : closest;
         }, { dist: Infinity, entity: null }).entity;
         if (!target) return;
-
         const dx = target.x - player.x;
         const dy = target.y - player.y;
-        const dist = Math.hypot(dx, dy);
-        const desiredDist = 180;
-        if (dist > desiredDist + 30) {
+        const dist = Math.hypot(dx, dy) || 1;
+        const desired = 220;
+        if (dist > desired + 30) {
           player.vx = (dx / dist) * player.stats.speed * 0.9;
           player.vy = (dy / dist) * player.stats.speed * 0.9;
-        } else if (dist < desiredDist - 50) {
-          player.vx = -(dx / dist) * player.stats.speed * 0.8;
-          player.vy = -(dy / dist) * player.stats.speed * 0.8;
+        } else if (dist < desired - 60) {
+          player.vx = -(dx / dist) * player.stats.speed * 0.85;
+          player.vy = -(dy / dist) * player.stats.speed * 0.85;
         } else {
-          const strafeAngle = Math.atan2(dy, dx) + Math.PI / 2;
-          player.vx = Math.cos(strafeAngle) * player.stats.speed * 0.5;
-          player.vy = Math.sin(strafeAngle) * player.stats.speed * 0.5;
+          const strafe = Math.atan2(dy, dx) + Math.PI / 2;
+          player.vx = Math.cos(strafe) * player.stats.speed * 0.55;
+          player.vy = Math.sin(strafe) * player.stats.speed * 0.55;
         }
-
-        const leadX = target.x + target.vx * 0.2;
-        const leadY = target.y + target.vy * 0.2;
-        this.tryFire(player, leadX, leadY, 0.25);
-
-        if (player.abilityCooldown <= 0 && Math.random() < 0.002) {
+        const leadX = target.x + target.vx * 0.15;
+        const leadY = target.y + target.vy * 0.15;
+        this.fire(player, leadX, leadY, 0.6);
+        if (player.abilityCooldown <= 0 && Math.random() < 0.0025) {
           this.triggerAbility(player);
         }
       }
@@ -623,48 +573,43 @@
       triggerAbility(player) {
         player.abilityCooldown = 10;
         player.abilityTimer = 3;
-        player.recalculateStats();
-        const activeName = player.loadout.gear.map(g => g.ability).join(' + ');
-        this.pushFeed(`${player.name} activated ${activeName}`);
         player.stats.speed *= 1.35;
         player.stats.damage *= 1.25;
-        player.shield = Math.max(0, player.shield - player.stats.maxShield * 0.2);
+        player.shield = Math.max(0, player.shield - player.stats.maxShield * 0.25);
+        pushFeed(`${player.name} activated ${player.stats.abilityName}`);
+        updatePlayerStats();
       }
 
-      tryFire(player, targetX, targetY, aiSpreadFactor = 1) {
+      fire(player, targetX, targetY, aiSpreadFactor) {
         if (player.fireCooldown > 0 || !player.isAlive) return;
-        const weapon = WEAPONS[player.loadout.weapon];
-        const baseDamage = player.stats.damage;
-        const dirX = targetX - player.x;
-        const dirY = targetY - player.y;
-        const baseAngle = Math.atan2(dirY, dirX);
-        const spread = player.stats.spread * (player.isHuman ? 1 : aiSpreadFactor + 0.6);
-        const angle = baseAngle + (Math.random() - 0.5) * spread * (Math.PI / 180);
-        const speed = player.stats.projectileSpeed;
-        const bullet = new Bullet({
-          x: player.x + Math.cos(angle) * player.radius,
-          y: player.y + Math.sin(angle) * player.radius,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          damage: baseDamage,
-          team: player.team,
-          owner: player,
-          color: player.color
-        });
-        this.bullets.push(bullet);
+        const weapon = player.stats.weapon;
+        const angle = Math.atan2(targetY - player.y, targetX - player.x);
+        const spread = player.stats.spread * (player.isHuman ? 1 : aiSpreadFactor);
+        const shots = weapon.pellets || 1;
+        for (let i = 0; i < shots; i++) {
+          const bulletAngle = angle + (Math.random() - 0.5) * spread * (Math.PI / 180);
+          this.bullets.push(new Bullet({
+            x: player.x + Math.cos(bulletAngle) * player.radius,
+            y: player.y + Math.sin(bulletAngle) * player.radius,
+            vx: Math.cos(bulletAngle) * player.stats.projectileSpeed,
+            vy: Math.sin(bulletAngle) * player.stats.projectileSpeed,
+            damage: player.stats.damage / shots,
+            team: player.team,
+            owner: player,
+            color: player.color
+          }));
+        }
         player.fireCooldown = player.stats.fireInterval;
         player.shield = Math.max(0, player.shield - 0.5);
       }
 
       updateBullets(dt) {
-        const width = this.mapSize.width;
-        const height = this.mapSize.height;
         for (let i = this.bullets.length - 1; i >= 0; i--) {
           const bullet = this.bullets[i];
           bullet.x += bullet.vx * dt;
           bullet.y += bullet.vy * dt;
           bullet.life -= dt;
-          if (bullet.x < 0 || bullet.x > width || bullet.y < 0 || bullet.y > height || bullet.life <= 0) {
+          if (bullet.x < 0 || bullet.x > canvas.width || bullet.y < 0 || bullet.y > canvas.height || bullet.life <= 0) {
             this.bullets.splice(i, 1);
             continue;
           }
@@ -674,9 +619,8 @@
             if (dist <= player.radius) {
               player.takeDamage(bullet.damage, bullet.owner);
               if (!player.isAlive) {
-                const killerTeam = bullet.owner.team;
-                this.pushFeed(`${bullet.owner.name} eliminated ${player.name}`);
-                this.incrementScore(killerTeam);
+                pushFeed(`${bullet.owner.name} eliminated ${player.name}`);
+                updateScoreboard();
               }
               this.bullets.splice(i, 1);
               break;
@@ -685,96 +629,35 @@
         }
       }
 
-      incrementScore(team) {
-        const teamKills = this.players.filter(p => p.team === team);
-        const total = teamKills.reduce((sum, p) => sum + p.kills, 0);
-        this.updateScoreboard();
-        if (total >= this.targetScore) {
-          this.showBanner(`Team ${team + 1} Wins!`);
-          this.running = false;
-        }
-      }
-
-      updateScoreboard() {
-        const scoreboard = document.getElementById('scoreboard');
-        scoreboard.innerHTML = '';
-        const teams = new Map();
-        for (const player of this.players) {
-          const existing = teams.get(player.team) || { kills: 0, deaths: 0 };
-          teams.set(player.team, {
-            kills: existing.kills + player.kills,
-            deaths: existing.deaths + player.deaths
-          });
-        }
-        const sorted = Array.from(teams.entries()).sort((a, b) => b[1].kills - a[1].kills);
-        for (const [teamId, value] of sorted) {
-          const row = document.createElement('div');
-          row.className = 'score-row' + (this.human && this.human.team === teamId ? ' me' : '');
-          row.style.borderLeft = `4px solid ${TEAM_COLORS[teamId % TEAM_COLORS.length]}`;
-          row.innerHTML = `<span>Team ${teamId + 1}</span><span>${value.kills} K / ${value.deaths} D</span>`;
-          scoreboard.appendChild(row);
-        }
-        this.updatePlayerStats();
-      }
-
-      updatePlayerStats() {
-        const panel = document.getElementById('playerStats');
-        if (!this.human) {
-          panel.innerHTML = '';
-          return;
-        }
-        const abilityReady = this.human.abilityCooldown <= 0 ?
-          '<span class="ability-ready">READY</span>' :
-          `<span class="ability-cooldown">${this.human.abilityCooldown.toFixed(1)}s</span>`;
-        panel.innerHTML = `
-          <div class="stat-line">Health: ${Math.round(this.human.health)} / ${Math.round(this.human.stats.maxHealth)}</div>
-          <div class="stat-line">Shield: ${Math.round(this.human.shield)}</div>
-          <div class="stat-line">Weapon: ${WEAPONS[this.human.loadout.weapon].name}</div>
-          <div class="stat-line">Ability: ${this.human.loadout.gear.map(g => g.ability).join(' + ')} — ${abilityReady}</div>
-        `;
-      }
-
-      pushFeed(text) {
-        const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        this.killFeed.unshift(`[${time}] ${text}`);
-        if (this.killFeed.length > 12) this.killFeed.pop();
-        const feedEl = document.getElementById('killFeed');
-        feedEl.innerHTML = this.killFeed.map(line => `<div>${line}</div>`).join('');
-      }
-
-      showBanner(text) {
-        const banner = document.getElementById('statusBanner');
-        banner.textContent = text;
-        banner.style.display = 'block';
-        setTimeout(() => (banner.style.display = 'none'), 4000);
-      }
-
-      checkWinCondition() {
-        if (!this.running) return;
-        const teams = new Map();
-        this.players.forEach(player => {
-          const entry = teams.get(player.team) || { kills: 0 };
-          teams.set(player.team, { kills: entry.kills + player.kills });
-        });
-        for (const [teamId, entry] of teams.entries()) {
-          if (entry.kills >= this.targetScore) {
-            this.running = false;
-            this.showBanner(`Team ${teamId + 1} Wins!`);
-          }
-        }
-      }
-
       render() {
-        const ctx = this.ctx;
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.save();
-        this.renderArena(ctx);
+        ctx.fillStyle = 'rgba(8,14,26,0.92)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = 'rgba(102, 209, 255, 0.08)';
+        for (let x = 0; x < canvas.width; x += 90) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, canvas.height);
+          ctx.stroke();
+        }
+        for (let y = 0; y < canvas.height; y += 90) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(canvas.width, y);
+          ctx.stroke();
+        }
+        ctx.strokeStyle = 'rgba(102, 209, 255, 0.3)';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
+
         this.bullets.forEach(bullet => {
           ctx.fillStyle = bullet.color;
           ctx.beginPath();
           ctx.arc(bullet.x, bullet.y, 3, 0, Math.PI * 2);
           ctx.fill();
         });
+
         this.players.forEach(player => {
           ctx.save();
           ctx.globalAlpha = player.isAlive ? 1 : 0.25;
@@ -784,129 +667,134 @@
           ctx.fill();
           ctx.strokeStyle = 'rgba(255,255,255,0.2)';
           ctx.stroke();
-          const healthRatio = Math.max(0, player.health / player.stats.maxHealth);
-          ctx.fillStyle = 'rgba(0,0,0,0.5)';
-          ctx.fillRect(player.x - player.radius, player.y - player.radius - 8, player.radius * 2, 4);
+          ctx.fillStyle = '#02131f';
+          ctx.fillRect(player.x - player.radius, player.y - player.radius - 9, player.radius * 2, 5);
           ctx.fillStyle = '#3cffaf';
-          ctx.fillRect(player.x - player.radius, player.y - player.radius - 8, player.radius * 2 * healthRatio, 4);
-          ctx.fillStyle = '#a2c5ff';
-          const shieldRatio = Math.min(1, player.shield / Math.max(1, player.stats.maxShield));
-          ctx.fillRect(player.x - player.radius, player.y - player.radius - 12, player.radius * 2 * shieldRatio, 3);
-          ctx.fillStyle = 'rgba(255,255,255,0.75)';
-          ctx.font = '11px "Segoe UI", sans-serif';
+          ctx.fillRect(player.x - player.radius, player.y - player.radius - 9, player.radius * 2 * Math.max(0, player.health / player.stats.maxHealth), 5);
+          ctx.fillStyle = '#8ac6ff';
+          ctx.fillRect(player.x - player.radius, player.y - player.radius - 14, player.radius * 2 * Math.max(0, player.shield / Math.max(1, player.stats.maxShield)), 3);
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.78)';
+          ctx.font = '12px "Segoe UI"';
           ctx.textAlign = 'center';
-          ctx.fillText(player.name, player.x, player.y + player.radius + 12);
+          ctx.fillText(player.name, player.x, player.y + player.radius + 13);
           ctx.restore();
         });
         ctx.restore();
       }
 
-      renderArena(ctx) {
-        const w = this.canvas.width;
-        const h = this.canvas.height;
-        ctx.fillStyle = 'rgba(10,16,27,0.9)';
-        ctx.fillRect(0, 0, w, h);
-        ctx.strokeStyle = 'rgba(102,209,255,0.08)';
-        for (let x = 0; x < w; x += 60) {
-          ctx.beginPath();
-          ctx.moveTo(x, 0);
-          ctx.lineTo(x, h);
-          ctx.stroke();
+      checkWin() {
+        const tally = new Map();
+        for (const player of this.players) {
+          const entry = tally.get(player.team) || 0;
+          tally.set(player.team, entry + player.kills);
         }
-        for (let y = 0; y < h; y += 60) {
-          ctx.beginPath();
-          ctx.moveTo(0, y);
-          ctx.lineTo(w, y);
-          ctx.stroke();
+        for (const [team, kills] of tally.entries()) {
+          if (kills >= this.targetScore) {
+            this.running = false;
+            pushStatus(`Team ${team + 1} wins!`);
+          }
         }
-        ctx.strokeStyle = 'rgba(102,209,255,0.3)';
-        ctx.strokeRect(20, 20, w - 40, h - 40);
       }
     }
 
-    const canvas = document.getElementById('gameCanvas');
-    const match = new Match(canvas);
+    const match = new ArenaMatch();
 
-    function populateOptions() {
-      const teamContainer = document.getElementById('teamConfigOptions');
-      teamContainer.innerHTML = '';
-      Object.values(TEAM_CONFIGS).forEach((config, idx) => {
-        const chip = document.createElement('label');
-        chip.className = 'radio-chip' + (idx === 0 ? ' active' : '');
-        chip.innerHTML = `<input type="radio" name="teamConfig" value="${config.id}" ${idx === 0 ? 'checked' : ''} hidden /><span>${config.label}</span>`;
-        chip.addEventListener('click', () => {
-          document.querySelectorAll('.radio-chip').forEach(el => el.classList.remove('active'));
-          chip.classList.add('active');
-        });
-        teamContainer.appendChild(chip);
+    function updateScoreboard() {
+      const board = document.getElementById('scoreboard');
+      board.innerHTML = '';
+      const tally = new Map();
+      match.players.forEach(player => {
+        const entry = tally.get(player.team) || { kills: 0, deaths: 0 };
+        entry.kills += player.kills;
+        entry.deaths += player.deaths;
+        tally.set(player.team, entry);
       });
-
-      const weaponSelect = document.getElementById('weaponSelect');
-      weaponSelect.innerHTML = Object.values(WEAPONS).map(weapon => `<option value="${weapon.id}">${weapon.name}</option>`).join('');
-
-      const scopeSelect = document.getElementById('scopeSelect');
-      scopeSelect.innerHTML = ATTACHMENTS.scope.map(att => `<option value="${att.id}">${att.name}</option>`).join('');
-      const barrelSelect = document.getElementById('barrelSelect');
-      barrelSelect.innerHTML = ATTACHMENTS.barrel.map(att => `<option value="${att.id}">${att.name}</option>`).join('');
-      const magSelect = document.getElementById('magSelect');
-      magSelect.innerHTML = ATTACHMENTS.mag.map(att => `<option value="${att.id}">${att.name}</option>`).join('');
-
-      document.getElementById('bootsSelect').innerHTML = GEAR_ITEMS.boots.map(gear => `<option value="${gear.id}">${gear.name}</option>`).join('');
-      document.getElementById('chestSelect').innerHTML = GEAR_ITEMS.chest.map(gear => `<option value="${gear.id}">${gear.name}</option>`).join('');
-      document.getElementById('utilitySelect').innerHTML = GEAR_ITEMS.utility.map(gear => `<option value="${gear.id}">${gear.name}</option>`).join('');
+      const sorted = Array.from(tally.entries()).sort((a, b) => b[1].kills - a[1].kills);
+      sorted.forEach(([team, data]) => {
+        const row = document.createElement('div');
+        row.innerHTML = `<span style="color:${TEAM_COLORS[team % TEAM_COLORS.length]}">Team ${team + 1}</span><span>${data.kills} K / ${data.deaths} D</span>`;
+        board.appendChild(row);
+      });
     }
 
-    populateOptions();
+    function updatePlayerStats() {
+      const panel = document.getElementById('playerStats');
+      if (!match.human) {
+        panel.innerHTML = '';
+        return;
+      }
+      const ability = match.human.abilityCooldown <= 0 ? 'READY' : match.human.abilityCooldown.toFixed(1) + 's';
+      panel.innerHTML = `
+        <div>Health: ${Math.round(match.human.health)} / ${Math.round(match.human.stats.maxHealth)}</div>
+        <div>Shield: ${Math.round(match.human.shield)}</div>
+        <div>Weapon: ${match.human.stats.weapon.name}</div>
+        <div>Ability: ${match.human.stats.abilityName} &mdash; ${ability}</div>
+      `;
+    }
 
-    document.getElementById('startBtn').addEventListener('click', () => {
-      const selectedConfigId = document.querySelector('input[name="teamConfig"]:checked')?.value || 'squads';
-      const config = TEAM_CONFIGS[selectedConfigId];
-      match.start(config);
+    function pushFeed(text) {
+      const feed = document.getElementById('feed');
+      feed.style.display = 'block';
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      match.killFeed.unshift(`[${time}] ${text}`);
+      if (match.killFeed.length > 10) match.killFeed.pop();
+      feed.innerHTML = match.killFeed.map(line => `<div>${line}</div>`).join('');
+    }
+
+    function pushStatus(text) {
+      const banner = document.getElementById('statusBanner');
+      banner.textContent = text;
+      banner.style.display = 'block';
+      setTimeout(() => banner.style.display = 'none', 3500);
+    }
+
+    document.getElementById('launchBtn').addEventListener('click', () => {
+      const configKey = document.getElementById('teamConfig').value;
+      const weapon = document.getElementById('weaponSelect').value;
+      const attachments = [
+        ATTACHMENTS.scope.find(a => a.id === document.getElementById('scopeSelect').value),
+        ATTACHMENTS.barrel.find(a => a.id === document.getElementById('barrelSelect').value),
+        ATTACHMENTS.mag.find(a => a.id === document.getElementById('magSelect').value)
+      ];
+      const gear = [
+        GEAR_ITEMS.boots.find(g => g.id === document.getElementById('bootsSelect').value),
+        GEAR_ITEMS.chest.find(g => g.id === document.getElementById('chestSelect').value),
+        GEAR_ITEMS.utility.find(g => g.id === document.getElementById('utilitySelect').value)
+      ];
+      match.start(TEAM_CONFIGS[configKey], { weapon, attachments, gear });
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('hud').style.display = 'flex';
+      document.getElementById('feed').style.display = 'none';
     });
 
-    function resizeCanvas() {
-      const rect = canvas.parentElement.getBoundingClientRect();
-      const ratio = canvas.width / canvas.height;
-      const availableWidth = rect.width;
-      const height = availableWidth / ratio;
-      canvas.style.height = height + 'px';
-    }
-
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    function animationLoop(timestamp) {
+    function gameLoop(timestamp) {
       match.update(timestamp);
-      requestAnimationFrame(animationLoop);
+      updatePlayerStats();
+      requestAnimationFrame(gameLoop);
     }
-
-    requestAnimationFrame(animationLoop);
+    requestAnimationFrame(gameLoop);
 
     window.addEventListener('keydown', e => {
       KEY_STATE[e.code] = true;
-      if (e.code === 'KeyM') {
-        match.showMap = !match.showMap;
-      }
     });
-
     window.addEventListener('keyup', e => {
       KEY_STATE[e.code] = false;
     });
+    window.addEventListener('blur', () => {
+      Object.keys(KEY_STATE).forEach(key => KEY_STATE[key] = false);
+      MOUSE_DOWN = false;
+    });
 
     canvas.addEventListener('mousemove', e => {
-      const rect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / rect.width;
-      const scaleY = canvas.height / rect.height;
-      MOUSE_POS = {
-        x: (e.clientX - rect.left) * scaleX,
-        y: (e.clientY - rect.top) * scaleY
-      };
+      MOUSE_POS = { x: e.clientX * window.devicePixelRatio, y: e.clientY * window.devicePixelRatio };
+      const crosshair = document.getElementById('crosshair');
+      crosshair.style.left = e.clientX + 'px';
+      crosshair.style.top = e.clientY + 'px';
     });
 
     canvas.addEventListener('mousedown', () => {
       MOUSE_DOWN = true;
     });
-
     window.addEventListener('mouseup', () => {
       MOUSE_DOWN = false;
     });
